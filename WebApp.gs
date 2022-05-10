@@ -167,10 +167,17 @@ function todoFromGcal() {
   
   for (i = 0; i < events.length; i++) {
     var params = paramsTemplatePost;
+    var priority = "1.5";
+    if (events[i].getTitle() == "w") {
+      priority = "2";
+    }
     params["payload"] = {
-      "text" : events[i].getTitle(), 
+      "text" : events[i].getTitle() + " - " + now.toLocaleDate(), 
       "type" : "todo",
-      "priority" : "1.5"
+      "priority" : priority,
+      "date":  now.toISOString(),
+      "notes" : "starts at: " + events[i].getStartTime().toLocaleTimeString() + "\n ends at: " + 
+      events[i].getEndTime().toLocaleTimeString(),
     }
     
     UrlFetchApp.fetch("https://habitica.com/api/v3/tasks/user", params)
