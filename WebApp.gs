@@ -1,7 +1,7 @@
-var habId = "12345678-abcd-1234-abcd-123456789012"; //"HABITICA-ID-IN-QUOTES"
-var habToken = "12345678-abcd-abcd-abcd-123456789099"; //"HABITICA-TOKEN-IN-QUOTES"
-var webScript = 'https://script.google.com/macros/s/1234567890asdfgghjkll/dev' //WebApp script after publishing.
-var emailID = "user@gmail.com";  //Your emailID
+var habId = "1233412345543567"; //"HABITICA-ID-IN-QUOTES"
+var habToken = "1234567890-1234567890"; //"HABITICA-TOKEN-IN-QUOTES"
+var webScript = 'https://script.google.com/macros/s/AKfycbw6EgFcsxxhfavDamHgWW-sxwTChUwdKr1CatYCwsxU8hfeRIM/exec' //WebApp script after publishing.
+var emailID = "jjbelezos@gmail.com";  //Your emailID
 
 var skillName = "toolsOfTrade"; // The skill name as provided in the tutorial.
 var skillMP = 5000; // The mana required for casting the skill. Use skillMP = 5000 if not using this function.
@@ -12,10 +12,13 @@ var skillMP = 5000; // The mana required for casting the skill. Use skillMP = 50
 
 var paramsTemplatePost = {
   "method" : "post",
+  "contentType": "application/json",
   "headers" : {
     "x-api-user" : habId, 
     "x-api-key" : habToken
-  }
+  },
+  "encoding":false,
+  "muteHttpExceptions": true,
 }
 
 var paramsTemplateGet = {
@@ -49,7 +52,7 @@ function cronScript() {
   
   //---------------------Health-------------------------------  
   
-  while (hp < 36 && user.data.stats.gp >26)
+  /*while (hp < 36 && user.data.stats.gp >26)
   {
     var resp1 = UrlFetchApp.fetch("https://habitica.com/api/v3/user/buy-health-potion", paramsTemplatePost);
     var user1 = JSON.parse(resp1);
@@ -57,7 +60,7 @@ function cronScript() {
     msg = msg + 'Bought HP';
     hp = user1.data.hp;
     Utilities.sleep(2000)
-  }
+  }*/
   
   //----------------------Cron------------------------------  
   
@@ -81,7 +84,7 @@ function cronScript() {
   }
   
   //-----------------------Armoire-----------------------------  Using 125 as 25 remains for health incase of emergency  
-  gp = userf.data.stats.gp;
+  /*gp = userf.data.stats.gp;
   for(i = 0;i < 2;i++)
   {
     if (gp > 125) 
@@ -99,7 +102,7 @@ function cronScript() {
       gp = gp-100;
       Utilities.sleep(2000)
     }
-  }
+  }*/
   
   //-------------------------Email---------------------------  
   
@@ -168,20 +171,32 @@ function todoFromGcal() {
   for (i = 0; i < events.length; i++) {
     var params = paramsTemplatePost;
     var priority = "1.5";
-    if (events[i].getTitle() == "w") {
+    var checklist = [];
+    if (events[i].getTitle().toLowerCase() == "w") {
       priority = "2";
+      checklist = [{"text":"am i early"},{"text":"did i get out before 10:30"}];
+   
     }
-    params["payload"] = {
-      "text" : events[i].getTitle() + " - " + now.toLocaleDate(), 
+    params["payload"] = Utilities.newBlob(JSON.stringify({
+      "text" : events[i].getTitle() + " - " + now.toLocaleDateString(), 
       "type" : "todo",
       "priority" : priority,
       "date":  now.toISOString(),
       "notes" : "starts at: " + events[i].getStartTime().toLocaleTimeString() + "\n ends at: " + 
       events[i].getEndTime().toLocaleTimeString(),
+      "checklist": checklist,
+      
+  }),"application/json");
+    //Logger.log(JSON.stringify(params));
+    try {
+     // var response = UrlFetchApp.fetch("https://habitica.com/api/v3/tasks/user", params);
+      Logger.log(response.getContentText()); 
+    } catch(e) {
+     Logger.log(e.stack);
     }
-    
-    UrlFetchApp.fetch("https://habitica.com/api/v3/tasks/user", params)
-  } 
+ 
+  }
+
 }
 
 
@@ -328,4 +343,3 @@ function doGet(e)
   var template2 = '\n</body>\n</html>';
   return HtmlService.createHtmlOutput(template1+str+template2) 
   
-}
